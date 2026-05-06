@@ -8,6 +8,7 @@ dependencies = [
     "curl-cffi>=0.14.0",
     "fastmcp>=3.0.2",
     "httpx>=0.28.1",
+    "prefab-ui>=0.19.1",
 ]
 
 [build-system]
