@@ -1,6 +1,8 @@
 from curl_cffi.requests import AsyncSession
 from curl_cffi.requests.exceptions import HTTPError, Timeout
 
+CT_API_BASE_URL = "https://clinicaltrials.gov/api/v2"
+
 
 def make_api_client() -> AsyncSession:
     """Return an async HTTP client that impersonates Chrome's TLS fingerprint.
