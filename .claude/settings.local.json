@@ -1,7 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "WebFetch(domain:clinicaltrials.gov)"
+      "WebFetch(domain:clinicaltrials.gov)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\aronsonm\\\\Documents\\\\GitHub\\\\mcp-server-nih-clinicaltrials\" -Recurse -File)",
+      "Bash(Select-Object FullName)",
+      "Bash(Sort-Object FullName)"
     ]
   }
 }
