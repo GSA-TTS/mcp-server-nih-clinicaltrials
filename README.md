@@ -22,24 +22,26 @@ Search studies by condition, intervention, sponsor, location, and more. Returns 
 | Parameter | Description |
 |---|---|
 | `query_cond` | Condition or disease (e.g. `diabetes`) |
-| `query_term` | General keyword search |
-| `query_intr` | Intervention or treatment name |
+| `query_term` | General keyword search; also matches enum-typed fields (Phase, StudyType, InterventionType, etc.) when exact enum values are provided |
+| `query_intr` | Intervention or treatment name; also matches `InterventionType` and `ArmGroupType` enum values |
 | `query_titles` | Search within study titles only |
 | `query_id` | NCT ID or other study identifier |
 | `query_spons` | Sponsor or collaborator name |
 | `query_locn` | Location name or city |
-| `query_patient` | Plain-language patient-friendly search |
+| `query_patient` | Plain-language patient-friendly search; also matches `StandardAge`, `InterventionalAssignment`, `DesignMasking`, `WhoMasked`, `ObservationalModel`, `PrimaryPurpose`, and `DesignTimePerspective` enum values |
 
 **Filters:**
 
-| Parameter | Description |
-|---|---|
-| `filter_overall_status` | List of recruitment statuses (e.g. `[RECRUITING, NOT_YET_RECRUITING]`) |
-| `filter_geo` | Geographic radius, e.g. `distance(39.0,-77.0,50mi)` |
-| `filter_ids` | List of specific NCT IDs |
-| `post_filter_overall_status` | Status filter applied after aggregation counts |
-| `post_filter_geo` | Geo filter applied after aggregation counts |
-| `agg_filters` | Aggregation filters string, e.g. `phase:2 3,studyType:int` |
+| Parameter | Type | Description |
+|---|---|---|
+| `filter_overall_status` | `OverallStatus[]` | Recruitment status (e.g. `[RECRUITING, NOT_YET_RECRUITING]`) |
+| `filter_geo` | string | Geographic radius, e.g. `distance(39.0,-77.0,50mi)` |
+| `filter_ids` | `string[]` | List of specific NCT IDs |
+| `post_filter_overall_status` | `OverallStatus[]` | Status filter applied after aggregation counts |
+| `post_filter_geo` | string | Geo filter applied after aggregation counts |
+| `agg_filter_phase` | `Phase[]` | Filter by phase (e.g. `[PHASE2, PHASE3]`) |
+| `agg_filter_study_type` | `StudyType[]` | Filter by study type (e.g. `[INTERVENTIONAL]`) |
+| `agg_filters` | string | Raw aggregation filter string for advanced use; cannot be combined with `agg_filter_phase` or `agg_filter_study_type` |
 
 **Pagination & output:**
 
@@ -53,6 +55,11 @@ Search studies by condition, intervention, sponsor, location, and more. Returns 
 | `format` | `json` | `json` or `csv` |
 | `markup_format` | `markdown` | `markdown` or `legacy` |
 
+### `clinicaltrials_search_datatable`
+Same search interface as `clinicaltrials_search_studies` but renders all matching results as an interactive, sortable, paginated table. Fetches all pages automatically. Each row shows NCT ID, title, status, phase, conditions, interventions, sponsor, start date, and enrollment count.
+
+Accepts the same query, filter, and sort parameters as `clinicaltrials_search_studies` (excluding pagination and output format options).
+
 ### `clinicaltrials_get_field_values`
 Get the distribution of values across all studies for one or more fields. Useful for understanding what values exist and how common they are (e.g. study counts per phase, per country, per status).
 
@@ -62,9 +69,25 @@ Get the distribution of values across all studies for one or more fields. Useful
 
 Works best with enumerable fields: `Phase`, `OverallStatus`, `StudyType`, `Sex`, `StdAge`, `LeadSponsorClass`, `InterventionType`, `LocationCountry`, `DesignAllocation`, `IsFDARegulatedDrug`, `HasResults`, `IPDSharing`.
 
+### `clinicaltrials_analyze_study_locations`
+Analyze the geographic distribution of locations across a set of studies. Pages through all matching results and classifies each study relative to a target country:
+
+- `only_in_target` — all locations are in the target country
+- `mixed` — locations in both the target country and at least one other
+- `not_in_target` — no locations in the target country
+- `no_location_data` — no location country data present
+
+Also returns a frequency table of every country seen, sorted by count descending.
+
+Accepts the same query and filter parameters as `clinicaltrials_search_studies`, plus:
+
+| Parameter | Default | Description |
+|---|---|---|
+| `target_country` | `United States` | Reference country for classification (case-insensitive) |
+
 ## Field Selection
 
-All three tools accept a `fields` parameter typed as `List[StudyField]`. The `StudyField` enum contains all 342 valid field names sourced from the ClinicalTrials.gov metadata API, grouped by section:
+All tools that return study records accept a `fields` parameter typed as `List[StudyField]`. The `StudyField` enum contains all 342 valid field names sourced from the ClinicalTrials.gov metadata API, grouped by section:
 
 - **Identification**: `NCTId`, `BriefTitle`, `OfficialTitle`, `Acronym`, `OrgFullName`, ...
 - **Status**: `OverallStatus`, `StartDate`, `CompletionDate`, `LastUpdatePostDate`, ...
@@ -76,6 +99,28 @@ All three tools accept a `fields` parameter typed as `List[StudyField]`. The `St
 - **Locations**: `LocationFacility`, `LocationCity`, `LocationState`, `LocationCountry`, ...
 - **Results**: participant flow, baseline characteristics, outcome measures, adverse events
 - **MeSH / Browse**: `ConditionMeshTerm`, `InterventionMeshTerm`, ...
+
+## Suggested Queries
+
+### Phase and study type filters
+- *Find recruiting Phase 2 and Phase 3 interventional studies for breast cancer.*
+- *Search for recruiting observational studies on diabetes.*
+- *Are there any expanded access or temporarily unavailable pembrolizumab studies?*
+
+### Intervention type
+- *Find placebo-controlled drug trials for type 2 diabetes that are currently recruiting.*
+- *Show me biological interventions for melanoma in phase 2 or 3.*
+- *What device feasibility studies are enrolling by invitation?*
+
+### Study design and patient eligibility
+- *Find prospective cohort studies on long COVID that accept adult and older adult participants.*
+- *Show me double-blind parallel assignment prevention trials for cardiovascular disease.*
+- *What treatment studies for childhood asthma use a crossover design and are currently recruiting?*
+
+### Location analysis
+- *How many recruiting diabetes trials are US-only?*
+- *Of all NIH-sponsored studies, which are exclusively in the United States?*
+- *Analyze the country distribution of phase 3 oncology interventional trials.*
 
 ## Setup
 
@@ -130,7 +175,7 @@ Add to `claude_desktop_config.json`:
 ```
 src/clinicaltrials/
 ├── app.py       # FastMCP server init and transport config
-├── tools.py     # Tool implementations (register_tools)
+├── tools/       # Tool implementations (one file per tool)
 ├── models.py    # Pydantic models and enums (StudyField, OverallStatus, ...)
 ├── utils.py     # Shared HTTP client (Chrome TLS impersonation) and error handling
 ├── prompts.py   # MCP prompts
