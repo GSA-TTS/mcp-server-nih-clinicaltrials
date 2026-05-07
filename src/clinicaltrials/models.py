@@ -458,15 +458,15 @@ class GetStudyInput(BaseModel):
         return v.upper()
 
 
-class SearchStudiesInput(BaseModel):
-    """Input parameters for the GET /studies (search) endpoint."""
+class StudyQueryParams(BaseModel):
+    """Shared query and filter parameters for clinical study search endpoints."""
     model_config = ConfigDict(
         str_strip_whitespace=True,
         validate_assignment=True,
         extra="forbid",
     )
 
-    # --- Query parameters (at least one required) ---
+    # --- Query parameters ---
     query_cond: Optional[str] = Field(
         default=None,
         description="Search by condition or disease (e.g., 'diabetes', 'breast cancer').",
@@ -545,6 +545,29 @@ class SearchStudiesInput(BaseModel):
         ),
     )
 
+
+class StudySearchBase(StudyQueryParams):
+    """Extends StudyQueryParams with a validator requiring at least one query or filter."""
+
+    @model_validator(mode="after")
+    def require_at_least_one_query_or_filter(self) -> "StudySearchBase":
+        query_fields = [
+            self.query_cond, self.query_term, self.query_intr, self.query_titles,
+            self.query_id, self.query_spons, self.query_locn, self.query_patient,
+            self.filter_ids,
+        ]
+        if not any(query_fields):
+            raise ValueError(
+                "At least one query parameter (query_cond, query_term, query_intr, "
+                "query_titles, query_id, query_spons, query_locn, query_patient) "
+                "or filter_ids must be provided."
+            )
+        return self
+
+
+class SearchStudiesInput(StudySearchBase):
+    """Input parameters for the GET /studies (search) endpoint."""
+
     # --- Sorting & pagination ---
     sort: Optional[str] = Field(
         default=None,
@@ -589,21 +612,6 @@ class SearchStudiesInput(BaseModel):
         ),
     )
 
-    @model_validator(mode="after")
-    def require_at_least_one_query_or_filter(self) -> "SearchStudiesInput":
-        query_fields = [
-            self.query_cond, self.query_term, self.query_intr, self.query_titles,
-            self.query_id, self.query_spons, self.query_locn, self.query_patient,
-            self.filter_ids,
-        ]
-        if not any(query_fields):
-            raise ValueError(
-                "At least one query parameter (query_cond, query_term, query_intr, "
-                "query_titles, query_id, query_spons, query_locn, query_patient) "
-                "or filter_ids must be provided."
-            )
-        return self
-
 
 class GetFieldValuesInput(BaseModel):
     """Input parameters for the GET /stats/fieldValues endpoint."""
@@ -624,83 +632,8 @@ class GetFieldValuesInput(BaseModel):
     )
 
 
-class AnalyzeStudyLocationsInput(BaseModel):
+class AnalyzeStudyLocationsInput(StudyQueryParams):
     """Input parameters for the study location analysis tool."""
-    model_config = ConfigDict(
-        str_strip_whitespace=True,
-        validate_assignment=True,
-        extra="forbid",
-    )
-
-    # --- Query parameters (at least one required) ---
-    query_cond: Optional[str] = Field(
-        default=None,
-        description="Search by condition or disease (e.g., 'diabetes', 'breast cancer').",
-    )
-    query_term: Optional[str] = Field(
-        default=None,
-        description="General keyword search across all study fields (e.g., 'mRNA vaccine').",
-    )
-    query_intr: Optional[str] = Field(
-        default=None,
-        description="Search by intervention or treatment name (e.g., 'insulin', 'pembrolizumab').",
-    )
-    query_titles: Optional[str] = Field(
-        default=None,
-        description="Search within study titles only.",
-    )
-    query_id: Optional[str] = Field(
-        default=None,
-        description="Search by study ID, including NCT IDs and other secondary identifiers.",
-    )
-    query_spons: Optional[str] = Field(
-        default=None,
-        description="Search by sponsor or collaborator name (e.g., 'NIH', 'Pfizer').",
-    )
-    query_locn: Optional[str] = Field(
-        default=None,
-        description="Search by location terms such as facility name or city.",
-    )
-    query_patient: Optional[str] = Field(
-        default=None,
-        description="Patient-friendly search using plain language.",
-    )
-
-    # --- Filters ---
-    filter_overall_status: Optional[List[OverallStatus]] = Field(
-        default=None,
-        description=(
-            "Filter by recruitment status. Accepted values: RECRUITING, NOT_YET_RECRUITING, "
-            "ACTIVE_NOT_RECRUITING, COMPLETED, ENROLLING_BY_INVITATION, TERMINATED, "
-            "WITHDRAWN, SUSPENDED, UNKNOWN."
-        ),
-    )
-    filter_geo: Optional[str] = Field(
-        default=None,
-        description=(
-            "Filter studies to those with a location within a geographic radius. "
-            "Format: 'distance(lat,lon,radius)' (e.g., 'distance(39.0,-77.0,50mi)')."
-        ),
-    )
-    filter_ids: Optional[List[str]] = Field(
-        default=None,
-        description="Filter to a specific list of NCT IDs (e.g., ['NCT04280705', 'NCT00000102']).",
-    )
-    post_filter_overall_status: Optional[List[OverallStatus]] = Field(
-        default=None,
-        description="Same as filter_overall_status but applied after aggregation counts are computed.",
-    )
-    post_filter_geo: Optional[str] = Field(
-        default=None,
-        description="Same as filter_geo but applied after aggregation counts are computed.",
-    )
-    agg_filters: Optional[str] = Field(
-        default=None,
-        description=(
-            "Aggregation filters as a comma-separated string. "
-            "Example: 'phase:2 3,studyType:int' for phase 2 or 3 interventional studies."
-        ),
-    )
 
     # --- Analysis target ---
     target_country: str = Field(
@@ -712,83 +645,8 @@ class AnalyzeStudyLocationsInput(BaseModel):
     )
 
 
-class SearchDatatableInput(BaseModel):
+class SearchDatatableInput(StudySearchBase):
     """Input parameters for the search datatable tool."""
-    model_config = ConfigDict(
-        str_strip_whitespace=True,
-        validate_assignment=True,
-        extra="forbid",
-    )
-
-    # --- Query parameters (at least one required) ---
-    query_cond: Optional[str] = Field(
-        default=None,
-        description="Search by condition or disease (e.g., 'diabetes', 'breast cancer').",
-    )
-    query_term: Optional[str] = Field(
-        default=None,
-        description="General keyword search across all study fields (e.g., 'mRNA vaccine').",
-    )
-    query_intr: Optional[str] = Field(
-        default=None,
-        description="Search by intervention or treatment name (e.g., 'insulin', 'pembrolizumab').",
-    )
-    query_titles: Optional[str] = Field(
-        default=None,
-        description="Search within study titles only (e.g., 'long COVID fatigue').",
-    )
-    query_id: Optional[str] = Field(
-        default=None,
-        description="Search by study ID, including NCT IDs and other secondary identifiers.",
-    )
-    query_spons: Optional[str] = Field(
-        default=None,
-        description="Search by sponsor or collaborator name (e.g., 'NIH', 'Pfizer').",
-    )
-    query_locn: Optional[str] = Field(
-        default=None,
-        description="Search by location terms such as facility name or city.",
-    )
-    query_patient: Optional[str] = Field(
-        default=None,
-        description="Patient-friendly search using plain language.",
-    )
-
-    # --- Filters ---
-    filter_overall_status: Optional[List[OverallStatus]] = Field(
-        default=None,
-        description=(
-            "Filter by recruitment status. Accepted values: RECRUITING, NOT_YET_RECRUITING, "
-            "ACTIVE_NOT_RECRUITING, COMPLETED, ENROLLING_BY_INVITATION, TERMINATED, "
-            "WITHDRAWN, SUSPENDED, UNKNOWN."
-        ),
-    )
-    filter_geo: Optional[str] = Field(
-        default=None,
-        description=(
-            "Filter studies to those with a location within a geographic radius. "
-            "Format: 'distance(lat,lon,radius)' (e.g., 'distance(39.0,-77.0,50mi)')."
-        ),
-    )
-    filter_ids: Optional[List[str]] = Field(
-        default=None,
-        description="Filter to a specific list of NCT IDs (e.g., ['NCT04280705', 'NCT00000102']).",
-    )
-    post_filter_overall_status: Optional[List[OverallStatus]] = Field(
-        default=None,
-        description="Same as filter_overall_status but applied after aggregation counts are computed.",
-    )
-    post_filter_geo: Optional[str] = Field(
-        default=None,
-        description="Same as filter_geo but applied after aggregation counts are computed.",
-    )
-    agg_filters: Optional[str] = Field(
-        default=None,
-        description=(
-            "Aggregation filters as a comma-separated string. "
-            "Example: 'phase:2 3,studyType:int' for phase 2 or 3 interventional studies."
-        ),
-    )
 
     # --- Sorting ---
     sort: Optional[str] = Field(
@@ -798,19 +656,4 @@ class SearchDatatableInput(BaseModel):
             "Example: 'LastUpdatePostDate:desc'."
         ),
     )
-
-    @model_validator(mode="after")
-    def require_at_least_one_query_or_filter(self) -> "SearchDatatableInput":
-        query_fields = [
-            self.query_cond, self.query_term, self.query_intr, self.query_titles,
-            self.query_id, self.query_spons, self.query_locn, self.query_patient,
-            self.filter_ids,
-        ]
-        if not any(query_fields):
-            raise ValueError(
-                "At least one query parameter (query_cond, query_term, query_intr, "
-                "query_titles, query_id, query_spons, query_locn, query_patient) "
-                "or filter_ids must be provided."
-            )
-        return self
 
