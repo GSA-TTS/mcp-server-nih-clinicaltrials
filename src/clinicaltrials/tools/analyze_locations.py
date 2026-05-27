@@ -7,7 +7,7 @@ from clinicaltrials.utils import CT_API_BASE_URL, _handle_api_error, make_api_cl
 
 def register_analyze_locations(mcp) -> None:
     @mcp.tool(
-        name="clinicaltrials_analyze_study_locations",
+        name="analyze_study_locations",
         annotations={
             "title": "Analyze Study Locations by Country",
             "readOnlyHint": True,
@@ -16,7 +16,7 @@ def register_analyze_locations(mcp) -> None:
             "openWorldHint": True,
         },
     )
-    async def clinicaltrials_analyze_study_locations(
+    async def analyze_study_locations(
         params: AnalyzeStudyLocationsInput,
     ) -> str:
         """Analyze the country distribution of locations across a cohort of clinical studies.
