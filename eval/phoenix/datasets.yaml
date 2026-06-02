@@ -1,0 +1,12 @@
+# Dataset registry for Phoenix evaluation experiments
+# Each dataset maps to a CSV file with test questions and expected responses
+
+datasets:
+  clinicaltrials-test-0:
+    csv_path: datasets/clinicaltrials-test-0/examples/clinicaltrials-test-0.csv
+    input_keys:
+      - query
+    output_keys:
+      - responses
+    description: "Small dataset for testing the evaluation pipeline."
+
