@@ -25,3 +25,6 @@ htmlcov/
 .vscode/
 .idea/
 *.swp
+
+# Ignore OpenCode configuration files
+opencode.jsonc
