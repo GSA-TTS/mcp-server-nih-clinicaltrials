@@ -14,6 +14,7 @@ dependencies = [
     "langchain-openai>=1.2.2",
     "openinference-instrumentation-langchain>=0.1.66",
     "prefab-ui>=0.19.1",
+    "pytest>=9.0.3",
 ]
 
 [build-system]
