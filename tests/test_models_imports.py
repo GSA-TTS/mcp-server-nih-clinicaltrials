@@ -175,6 +175,49 @@ def test_search_datatable_input_instantiation():
     assert input_obj.sort == "LastUpdatePostDate:desc"
 
 
+def test_filter_advanced_field():
+    """Test that filter_advanced field works correctly in search models."""
+    from clinicaltrials.models import SearchStudiesInput, AnalyzeStudyLocationsInput, SearchDatatableInput
+    
+    # Test with SearchStudiesInput - simple Essie expression
+    essie_expr = "AREA[StartDate]2022"
+    input_obj = SearchStudiesInput(
+        query_cond="diabetes",
+        filter_advanced=essie_expr
+    )
+    assert input_obj.filter_advanced == essie_expr
+    assert input_obj.query_cond == "diabetes"
+    
+    # Test with AnalyzeStudyLocationsInput
+    input_obj2 = AnalyzeStudyLocationsInput(
+        query_term="cancer",
+        filter_advanced=essie_expr
+    )
+    assert input_obj2.filter_advanced == essie_expr
+    
+    # Test with SearchDatatableInput
+    input_obj3 = SearchDatatableInput(
+        query_intr="insulin",
+        filter_advanced=essie_expr
+    )
+    assert input_obj3.filter_advanced == essie_expr
+    
+    # Test with complex Essie expression
+    complex_expr = "AREA[StartDate]2022 ┃ AREA[MinimumAge]RANGE[MIN, 16 years] AND AREA[MaximumAge]RANGE[16 years, MAX]"
+    input_obj4 = SearchStudiesInput(
+        query_cond="pediatric",
+        filter_advanced=complex_expr
+    )
+    assert input_obj4.filter_advanced == complex_expr
+    
+    # Test that filter_advanced alone satisfies the requirement for at least one query/filter
+    input_obj5 = SearchStudiesInput(
+        filter_advanced=essie_expr
+    )
+    assert input_obj5.filter_advanced == essie_expr
+    assert input_obj5.query_cond is None  # No other query params needed
+
+
 def test_backward_compatibility_existing_imports():
     """Test that existing import patterns in the codebase still work."""
     # Pattern from tools/search_datatable.py

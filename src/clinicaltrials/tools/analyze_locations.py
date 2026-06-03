@@ -42,6 +42,8 @@ def register_analyze_locations(mcp) -> None:
                 Filters:
                 - filter_overall_status, filter_geo, filter_ids,
                   post_filter_overall_status, post_filter_geo, agg_filters
+                - filter_advanced (Optional[str]): Advanced Essie expression syntax filter.
+                  Examples: 'AREA[StartDate]2022' or 'AREA[MinimumAge]RANGE[MIN, 16 years] AND AREA[MaximumAge]RANGE[16 years, MAX]'.
 
                 Analysis:
                 - target_country (str): Reference country (default: 'United States').
@@ -114,6 +116,8 @@ def register_analyze_locations(mcp) -> None:
             base_params["filter.geo"] = params.filter_geo
         if params.filter_ids:
             base_params["filter.ids"] = ",".join(params.filter_ids)
+        if params.filter_advanced:
+            base_params["filter.advanced"] = params.filter_advanced
         if params.post_filter_overall_status:
             base_params["postFilter.overallStatus"] = ",".join(
                 s.value for s in params.post_filter_overall_status

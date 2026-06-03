@@ -109,6 +109,15 @@ class StudyQueryParams(BaseModel):
         default=None,
         description="Filter to a specific list of NCT IDs (e.g., ['NCT04280705', 'NCT00000102']).",
     )
+    filter_advanced: Optional[str] = Field(
+        default=None,
+        description=(
+            "Filter by query in Essie expression syntax."
+            "Prefer using the typed filter fields (e.g., filter_overall_status, filter_geo, agg_filter_phase) when possible, "
+            "but this allows for advanced users to specify any valid Essie filter expression as a raw string. "
+            "Example: AREA[StartDate]2022 | AREA[CompletionDate]2022-12-01 ┃ AREA[MinimumAge]RANGE[MIN, 16 years] AND AREA[MaximumAge]RANGE[16 years, MAX]"
+        )
+    )
     post_filter_overall_status: Optional[List[OverallStatus]] = Field(
         default=None,
         description=(
@@ -180,7 +189,7 @@ class StudySearchBase(StudyQueryParams):
             self.query_cond, self.query_term, self.query_intr, self.query_titles,
             self.query_id, self.query_spons, self.query_locn, self.query_patient,
             self.filter_ids, self.agg_filter_phase, self.agg_filter_study_type,
-            self.agg_filters,
+            self.agg_filters, self.filter_advanced
         ]
         if not any(query_fields):
             raise ValueError(

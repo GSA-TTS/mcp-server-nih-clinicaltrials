@@ -40,6 +40,8 @@ def register_search_studies(mcp) -> None:
                 - filter_overall_status (Optional[List[OverallStatus]]): Limit by recruitment status.
                 - filter_geo (Optional[str]): Geographic radius, e.g. 'distance(39.0,-77.0,50mi)'.
                 - filter_ids (Optional[List[str]]): Specific NCT IDs to retrieve.
+                - filter_advanced (Optional[str]): Advanced Essie expression syntax filter.
+                  Examples: 'AREA[StartDate]2022' or 'AREA[MinimumAge]RANGE[MIN, 16 years] AND AREA[MaximumAge]RANGE[16 years, MAX]'.
                 - post_filter_overall_status (Optional[List[OverallStatus]]): Status filter applied after aggregation.
                 - post_filter_geo (Optional[str]): Geo filter applied after aggregation.
                 - agg_filters (Optional[str]): Aggregation filters string, e.g. 'phase:2 3,studyType:int'.
@@ -119,6 +121,8 @@ def register_search_studies(mcp) -> None:
             query_params["filter.geo"] = params.filter_geo
         if params.filter_ids:
             query_params["filter.ids"] = ",".join(params.filter_ids)
+        if params.filter_advanced:
+            query_params["filter.advanced"] = params.filter_advanced
         if params.post_filter_overall_status:
             query_params["postFilter.overallStatus"] = ",".join(
                 s.value for s in params.post_filter_overall_status
