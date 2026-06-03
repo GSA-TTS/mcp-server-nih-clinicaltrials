@@ -71,7 +71,12 @@ class StudyQueryParams(BaseModel):
     )
     query_locn: Optional[str] = Field(
         default=None,
-        description="Search by location terms such as facility name or city (e.g., 'Boston', 'Mayo Clinic').",
+        description=(
+            "Search by location terms such as facility name, city, state, or country. "
+            "Supports simple text search (e.g., 'Boston', 'Mayo Clinic') or AREA syntax for field-specific queries. "
+            "AREA syntax examples: 'AREA[LocationState]MA', 'AREA[LocationCountry]US', 'AREA[LocationCity]Boston'. "
+            "Available fields: LocationCity, LocationState, LocationCountry, LocationFacility, LocationZip."
+        ),
     )
     query_patient: Optional[str] = Field(
         default=None,

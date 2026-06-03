@@ -218,6 +218,41 @@ def test_filter_advanced_field():
     assert input_obj5.query_cond is None  # No other query params needed
 
 
+def test_query_locn_area_syntax():
+    """Test that query_locn accepts AREA syntax expressions for location filtering."""
+    from clinicaltrials.models import SearchStudiesInput, AnalyzeStudyLocationsInput, SearchDatatableInput
+    
+    # Test simple AREA syntax for state
+    input_obj = SearchStudiesInput(
+        query_locn="AREA[LocationState]MA"
+    )
+    assert input_obj.query_locn == "AREA[LocationState]MA"
+    
+    # Test country filter
+    input_obj2 = SearchStudiesInput(
+        query_locn="AREA[LocationCountry]US"
+    )
+    assert input_obj2.query_locn == "AREA[LocationCountry]US"
+    
+    # Test city filter with AnalyzeStudyLocationsInput
+    input_obj3 = AnalyzeStudyLocationsInput(
+        query_locn="AREA[LocationCity]Boston"
+    )
+    assert input_obj3.query_locn == "AREA[LocationCity]Boston"
+    
+    # Test facility filter with SearchDatatableInput
+    input_obj4 = SearchDatatableInput(
+        query_locn="AREA[LocationFacility]Mayo Clinic"
+    )
+    assert input_obj4.query_locn == "AREA[LocationFacility]Mayo Clinic"
+    
+    # Test simple text search still works
+    input_obj5 = SearchStudiesInput(
+        query_locn="Boston"
+    )
+    assert input_obj5.query_locn == "Boston"
+
+
 def test_backward_compatibility_existing_imports():
     """Test that existing import patterns in the codebase still work."""
     # Pattern from tools/search_datatable.py

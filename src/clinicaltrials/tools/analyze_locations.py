@@ -37,7 +37,7 @@ def register_analyze_locations(mcp) -> None:
             params (AnalyzeStudyLocationsInput): Search/filter parameters plus:
                 Query fields (at least one required):
                 - query_cond, query_term, query_intr, query_titles, query_id,
-                  query_spons, query_locn, query_patient
+                  query_spons, query_locn (supports AREA syntax like 'AREA[LocationState]MA'), query_patient
 
                 Filters:
                 - filter_overall_status, filter_geo, filter_ids,

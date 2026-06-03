@@ -27,7 +27,7 @@ Search studies by condition, intervention, sponsor, location, and more. Returns 
 | `query_titles` | Search within study titles only |
 | `query_id` | NCT ID or other study identifier |
 | `query_spons` | Sponsor or collaborator name |
-| `query_locn` | Location name or city |
+| `query_locn` | Location search (text or AREA syntax: `AREA[LocationState]MA`, `AREA[LocationCountry]US`) |
 | `query_patient` | Plain-language patient-friendly search; also matches `StandardAge`, `InterventionalAssignment`, `DesignMasking`, `WhoMasked`, `ObservationalModel`, `PrimaryPurpose`, and `DesignTimePerspective` enum values |
 
 **Filters:**

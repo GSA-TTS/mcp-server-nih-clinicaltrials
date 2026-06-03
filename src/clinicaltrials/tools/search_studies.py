@@ -33,7 +33,8 @@ def register_search_studies(mcp) -> None:
                   submission IDs such as IND or IDE numbers are not searchable fields
                   in the API and will not match via this parameter.
                 - query_spons (Optional[str]): Sponsor or collaborator name (e.g., 'NIH').
-                - query_locn (Optional[str]): Location terms (e.g., 'Boston').
+                - query_locn (Optional[str]): Location search supporting text or AREA syntax.
+                  Simple: 'Boston', 'Mayo Clinic'. AREA: 'AREA[LocationState]MA', 'AREA[LocationCountry]US'.
                 - query_patient (Optional[str]): Plain-language patient-friendly search.
 
                 Filters:

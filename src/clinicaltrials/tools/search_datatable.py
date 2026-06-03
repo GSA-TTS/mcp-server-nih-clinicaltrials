@@ -22,7 +22,7 @@ def register_search_datatable(mcp) -> None:
             params (SearchDatatableInput): Search/filter parameters plus:
                 Query fields (at least one required):
                 - query_cond, query_term, query_intr, query_titles, query_id,
-                  query_spons, query_locn, query_patient
+                  query_spons, query_locn (supports AREA syntax like 'AREA[LocationState]MA'), query_patient
                   Note: query_id accepts NCT IDs and secondary identifiers but not
                   regulatory submission IDs (IND, IDE numbers), which are not
                   searchable fields in the API.
