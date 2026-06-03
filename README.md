@@ -51,7 +51,7 @@ Search studies by condition, intervention, sponsor, location, and more. Returns 
 | `page_size` | `20` | Results per page (1–1000) |
 | `page_token` | — | Cursor from previous response's `nextPageToken` |
 | `count_total` | `false` | Include total match count in response |
-| `fields` | all | Specific `StudyField` values to return |
+| `fields` | 19 essential fields | Specific `StudyField` values to return. Defaults to essential fields (NCTId, BriefTitle, OverallStatus, Phase, Condition, InterventionName, sponsor, location, dates, enrollment). For comprehensive study details, use `clinicaltrials_get_study` instead. |
 | `format` | `json` | `json` or `csv` |
 | `markup_format` | `markdown` | `markdown` or `legacy` |
 
@@ -87,7 +87,25 @@ Accepts the same query and filter parameters as `clinicaltrials_search_studies`,
 
 ## Field Selection
 
-All tools that return study records accept a `fields` parameter typed as `List[StudyField]`. The `StudyField` enum contains all 342 valid field names sourced from the ClinicalTrials.gov metadata API, grouped by section:
+### Default Fields for Search
+
+To optimize context window usage, `clinicaltrials_search_studies` returns **19 essential fields** by default instead of all 394 fields:
+
+**Identification:** NCTId, BriefTitle, OfficialTitle, Acronym  
+**Status:** OverallStatus, StartDate, PrimaryCompletionDate, CompletionDate, LastUpdatePostDate  
+**Core Info:** BriefSummary, Condition, Phase, StudyType, EnrollmentCount, InterventionName  
+**Sponsor:** LeadSponsorName, LeadSponsorClass  
+**Location:** LocationCountry, LocationFacility
+
+This provides sufficient information for initial study screening and filtering while keeping responses compact.
+
+### Getting Full Study Details
+
+For comprehensive information on specific studies including all 394 fields, use `clinicaltrials_get_study` with a single NCT ID. This tool is designed for detailed study review after initial screening.
+
+### Custom Field Selection
+
+All tools that return study records accept a `fields` parameter for custom field lists. The `StudyField` enum contains all 394 valid field names sourced from the ClinicalTrials.gov metadata API, grouped by section:
 
 - **Identification**: `NCTId`, `BriefTitle`, `OfficialTitle`, `Acronym`, `OrgFullName`, ...
 - **Status**: `OverallStatus`, `StartDate`, `CompletionDate`, `LastUpdatePostDate`, ...

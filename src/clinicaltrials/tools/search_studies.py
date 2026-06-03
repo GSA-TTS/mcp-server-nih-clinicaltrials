@@ -56,7 +56,10 @@ def register_search_studies(mcp) -> None:
                 Output:
                 - format (ResponseFormat): 'json' (default) or 'csv'.
                 - markup_format (MarkupFormat): 'markdown' (default) or 'legacy'.
-                - fields (Optional[str]): Comma-separated fields to return.
+                - fields (Optional[List[StudyField]]): Specific fields to return. 
+                  Defaults to 19 essential fields (NCTId, BriefTitle, OverallStatus, Phase, 
+                  Condition, InterventionName, sponsor, location, dates, enrollment) to minimize 
+                  context window usage. For full study details, use clinicaltrials_get_study instead.
 
         Returns:
             str: JSON string or CSV text, or an error message prefixed with 'Error:'.

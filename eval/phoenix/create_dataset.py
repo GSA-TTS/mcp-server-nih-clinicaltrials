@@ -6,9 +6,9 @@ This script replaces all the individual create_dataset.py files in each dataset 
 Dataset configurations are defined in datasets.yaml.
 
 Usage:
-    python create_dataset.py --dataset-name reporter-test-2
-    python create_dataset.py --list
-    python create_dataset.py --dataset-name reporter-eval-0 --phoenix-name my-custom-name
+    uv run create_dataset.py --dataset-name reporter-test-2
+    uv run create_dataset.py --list
+    uv run create_dataset.py --dataset-name reporter-eval-0 --phoenix-name my-custom-name
 """
 
 import argparse

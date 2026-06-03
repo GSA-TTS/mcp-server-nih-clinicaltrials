@@ -3,7 +3,7 @@ from pydantic import Field
 
 from clinicaltrials.models.search import StudySearchBase
 from clinicaltrials.models.enums import ResponseFormat, MarkupFormat
-from clinicaltrials.models.fields import StudyField
+from clinicaltrials.models.fields import StudyField, DEFAULT_SEARCH_FIELDS
 
 
 class SearchStudiesInput(StudySearchBase):
@@ -46,9 +46,12 @@ class SearchStudiesInput(StudySearchBase):
         description="Markup format for text fields: 'markdown' (default) or 'legacy'.",
     )
     fields: Optional[List[StudyField]] = Field(
-        default=None,
+        default_factory=lambda: DEFAULT_SEARCH_FIELDS.copy(),
         description=(
-            "Specific fields to return. If omitted, all fields are returned. "
-            "Example: [NCTId, BriefTitle, OverallStatus, Phase]."
+            "Specific fields to return. Defaults to 19 essential fields "
+            "(NCTId, BriefTitle, OverallStatus, Phase, Condition, InterventionName, etc.) "
+            "to minimize context window usage. "
+            "For comprehensive details on a single study, use clinicaltrials_get_study instead. "
+            "Custom field list example: [NCTId, BriefTitle, Phase, EnrollmentCount]."
         ),
     )

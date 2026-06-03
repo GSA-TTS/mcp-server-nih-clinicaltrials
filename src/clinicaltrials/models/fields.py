@@ -392,3 +392,37 @@ class StudyField(str, Enum):
     InterventionBrowseBranchName = "InterventionBrowseBranchName"  # Intervention Branch Topic Name
 
     HasResults = "HasResults"  # Has Results
+
+
+# Default fields for search_studies to minimize context window usage
+# while providing essential information for initial study screening
+DEFAULT_SEARCH_FIELDS = [
+    # Identification (4 fields)
+    StudyField.NCTId,           # National Clinical Trial ID
+    StudyField.BriefTitle,      # Brief Title
+    StudyField.OfficialTitle,   # Official Title
+    StudyField.Acronym,         # Acronym
+    
+    # Status (5 fields)
+    StudyField.OverallStatus,           # Recruitment status
+    StudyField.StartDate,               # Study start date
+    StudyField.PrimaryCompletionDate,   # Primary completion date
+    StudyField.CompletionDate,          # Full completion date
+    StudyField.LastUpdatePostDate,      # Last update timestamp
+    
+    # Core Study Info (6 fields)
+    StudyField.BriefSummary,    # Study summary
+    StudyField.Condition,       # Disease/condition
+    StudyField.Phase,           # Study phase
+    StudyField.StudyType,       # Interventional vs observational
+    StudyField.EnrollmentCount, # Number of participants
+    StudyField.InterventionName,# Treatment/intervention
+    
+    # Sponsor (2 fields)
+    StudyField.LeadSponsorName,  # Primary sponsor
+    StudyField.LeadSponsorClass, # Sponsor type (industry, NIH, etc.)
+    
+    # Location (2 fields)
+    StudyField.LocationCountry,  # Study countries
+    StudyField.LocationFacility, # Study sites
+]

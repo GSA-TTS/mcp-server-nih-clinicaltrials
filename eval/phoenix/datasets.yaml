@@ -10,3 +10,12 @@ datasets:
       - responses
     description: "Small dataset for testing the evaluation pipeline."
 
+  clinicaltrials-eval-0:
+    csv_path: datasets/clinicaltrials-eval-0/examples/clinicaltrials-eval-0.csv
+    input_keys:
+      - query
+    output_keys:
+      - responses
+    description: "Dataset from NCBI for evaluation."
+
+
