@@ -174,13 +174,24 @@ Add to `claude_desktop_config.json`:
 
 ```
 src/clinicaltrials/
-├── app.py       # FastMCP server init and transport config
-├── tools/       # Tool implementations (one file per tool)
-├── models.py    # Pydantic models and enums (StudyField, OverallStatus, ...)
-├── utils.py     # Shared HTTP client (Chrome TLS impersonation) and error handling
-├── prompts.py   # MCP prompts
-└── routes.py    # Custom HTTP routes (/health)
+├── app.py            # FastMCP server init and transport config
+├── tools/            # Tool implementations (one file per tool)
+├── models/           # Pydantic models and enums
+│   ├── __init__.py                          # Re-exports all classes
+│   ├── enums.py                             # All enum types (Phase, StudyType, etc.)
+│   ├── fields.py                            # StudyField enum (392 ClinicalTrials.gov fields)
+│   ├── search.py                            # Base search/query classes
+│   ├── get_study.py                         # GetStudyInput model
+│   ├── search_studies_input.py              # SearchStudiesInput model
+│   ├── get_field_values_input.py            # GetFieldValuesInput model
+│   ├── analyze_study_locations_input.py     # AnalyzeStudyLocationsInput model
+│   └── search_datatable_input.py            # SearchDatatableInput model
+├── utils.py          # Shared HTTP client (Chrome TLS impersonation) and error handling
+├── prompts.py        # MCP prompts
+└── routes.py         # Custom HTTP routes (/health)
 ```
+
+The `models/` directory organizes 1100+ lines of Pydantic models into focused modules for improved readability while maintaining full backward compatibility with `from clinicaltrials.models import ...` imports.
 
 ## Implementation Notes
 
