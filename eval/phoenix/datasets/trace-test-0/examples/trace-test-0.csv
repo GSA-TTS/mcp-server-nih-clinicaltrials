@@ -1,0 +1,4 @@
+query,responses
+Find recruiting diabetes studies,"tool=clinicaltrials_search_studies,query_cond=diabetes"
+Search for phase 2 cancer trials,"tool=clinicaltrials_search_studies,query_cond~cancer,agg_filter_phase~PHASE2"
+What are the common study phases?,"tool=clinicaltrials_get_field_values"

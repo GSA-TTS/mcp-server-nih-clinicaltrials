@@ -22,7 +22,7 @@ def register_search_datatable(mcp) -> None:
             params (SearchDatatableInput): Search/filter parameters plus:
                 Query fields (at least one required):
                 - query_cond, query_term, query_intr, query_titles, query_id,
-                  query_spons, query_locn, query_patient
+                  query_spons, query_locn (supports AREA syntax like 'AREA[LocationState]MA'), query_patient
                   Note: query_id accepts NCT IDs and secondary identifiers but not
                   regulatory submission IDs (IND, IDE numbers), which are not
                   searchable fields in the API.
@@ -30,6 +30,8 @@ def register_search_datatable(mcp) -> None:
                 Filters:
                 - filter_overall_status, filter_geo, filter_ids,
                   post_filter_overall_status, post_filter_geo, agg_filters
+                - filter_advanced (Optional[str]): Advanced Essie expression syntax filter.
+                  Examples: 'AREA[StartDate]2022' or 'AREA[MinimumAge]RANGE[MIN, 16 years] AND AREA[MaximumAge]RANGE[16 years, MAX]'.
 
                 Sorting:
                 - sort (str): e.g. 'LastUpdatePostDate:desc'.
@@ -69,6 +71,8 @@ def register_search_datatable(mcp) -> None:
             base_params["filter.geo"] = params.filter_geo
         if params.filter_ids:
             base_params["filter.ids"] = ",".join(params.filter_ids)
+        if params.filter_advanced:
+            base_params["filter.advanced"] = params.filter_advanced
         if params.post_filter_overall_status:
             base_params["postFilter.overallStatus"] = ",".join(
                 s.value for s in params.post_filter_overall_status

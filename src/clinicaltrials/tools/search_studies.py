@@ -33,13 +33,16 @@ def register_search_studies(mcp) -> None:
                   submission IDs such as IND or IDE numbers are not searchable fields
                   in the API and will not match via this parameter.
                 - query_spons (Optional[str]): Sponsor or collaborator name (e.g., 'NIH').
-                - query_locn (Optional[str]): Location terms (e.g., 'Boston').
+                - query_locn (Optional[str]): Location search supporting text or AREA syntax.
+                  Simple: 'Boston', 'Mayo Clinic'. AREA: 'AREA[LocationState]MA', 'AREA[LocationCountry]US'.
                 - query_patient (Optional[str]): Plain-language patient-friendly search.
 
                 Filters:
                 - filter_overall_status (Optional[List[OverallStatus]]): Limit by recruitment status.
                 - filter_geo (Optional[str]): Geographic radius, e.g. 'distance(39.0,-77.0,50mi)'.
                 - filter_ids (Optional[List[str]]): Specific NCT IDs to retrieve.
+                - filter_advanced (Optional[str]): Advanced Essie expression syntax filter.
+                  Examples: 'AREA[StartDate]2022' or 'AREA[MinimumAge]RANGE[MIN, 16 years] AND AREA[MaximumAge]RANGE[16 years, MAX]'.
                 - post_filter_overall_status (Optional[List[OverallStatus]]): Status filter applied after aggregation.
                 - post_filter_geo (Optional[str]): Geo filter applied after aggregation.
                 - agg_filters (Optional[str]): Aggregation filters string, e.g. 'phase:2 3,studyType:int'.
@@ -53,7 +56,10 @@ def register_search_studies(mcp) -> None:
                 Output:
                 - format (ResponseFormat): 'json' (default) or 'csv'.
                 - markup_format (MarkupFormat): 'markdown' (default) or 'legacy'.
-                - fields (Optional[str]): Comma-separated fields to return.
+                - fields (Optional[List[StudyField]]): Specific fields to return. 
+                  Defaults to 19 essential fields (NCTId, BriefTitle, OverallStatus, Phase, 
+                  Condition, InterventionName, sponsor, location, dates, enrollment) to minimize 
+                  context window usage. For full study details, use clinicaltrials_get_study instead.
 
         Returns:
             str: JSON string or CSV text, or an error message prefixed with 'Error:'.
@@ -119,6 +125,8 @@ def register_search_studies(mcp) -> None:
             query_params["filter.geo"] = params.filter_geo
         if params.filter_ids:
             query_params["filter.ids"] = ",".join(params.filter_ids)
+        if params.filter_advanced:
+            query_params["filter.advanced"] = params.filter_advanced
         if params.post_filter_overall_status:
             query_params["postFilter.overallStatus"] = ",".join(
                 s.value for s in params.post_filter_overall_status

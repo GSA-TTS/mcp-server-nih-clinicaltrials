@@ -27,7 +27,7 @@ Search studies by condition, intervention, sponsor, location, and more. Returns 
 | `query_titles` | Search within study titles only |
 | `query_id` | NCT ID or other study identifier |
 | `query_spons` | Sponsor or collaborator name |
-| `query_locn` | Location name or city |
+| `query_locn` | Location search (text or AREA syntax: `AREA[LocationState]MA`, `AREA[LocationCountry]US`) |
 | `query_patient` | Plain-language patient-friendly search; also matches `StandardAge`, `InterventionalAssignment`, `DesignMasking`, `WhoMasked`, `ObservationalModel`, `PrimaryPurpose`, and `DesignTimePerspective` enum values |
 
 **Filters:**
@@ -51,7 +51,7 @@ Search studies by condition, intervention, sponsor, location, and more. Returns 
 | `page_size` | `20` | Results per page (1–1000) |
 | `page_token` | — | Cursor from previous response's `nextPageToken` |
 | `count_total` | `false` | Include total match count in response |
-| `fields` | all | Specific `StudyField` values to return |
+| `fields` | 19 essential fields | Specific `StudyField` values to return. Defaults to essential fields (NCTId, BriefTitle, OverallStatus, Phase, Condition, InterventionName, sponsor, location, dates, enrollment). For comprehensive study details, use `clinicaltrials_get_study` instead. |
 | `format` | `json` | `json` or `csv` |
 | `markup_format` | `markdown` | `markdown` or `legacy` |
 
@@ -87,7 +87,25 @@ Accepts the same query and filter parameters as `clinicaltrials_search_studies`,
 
 ## Field Selection
 
-All tools that return study records accept a `fields` parameter typed as `List[StudyField]`. The `StudyField` enum contains all 342 valid field names sourced from the ClinicalTrials.gov metadata API, grouped by section:
+### Default Fields for Search
+
+To optimize context window usage, `clinicaltrials_search_studies` returns **19 essential fields** by default instead of all 394 fields:
+
+**Identification:** NCTId, BriefTitle, OfficialTitle, Acronym  
+**Status:** OverallStatus, StartDate, PrimaryCompletionDate, CompletionDate, LastUpdatePostDate  
+**Core Info:** BriefSummary, Condition, Phase, StudyType, EnrollmentCount, InterventionName  
+**Sponsor:** LeadSponsorName, LeadSponsorClass  
+**Location:** LocationCountry, LocationFacility
+
+This provides sufficient information for initial study screening and filtering while keeping responses compact.
+
+### Getting Full Study Details
+
+For comprehensive information on specific studies including all 394 fields, use `clinicaltrials_get_study` with a single NCT ID. This tool is designed for detailed study review after initial screening.
+
+### Custom Field Selection
+
+All tools that return study records accept a `fields` parameter for custom field lists. The `StudyField` enum contains all 394 valid field names sourced from the ClinicalTrials.gov metadata API, grouped by section:
 
 - **Identification**: `NCTId`, `BriefTitle`, `OfficialTitle`, `Acronym`, `OrgFullName`, ...
 - **Status**: `OverallStatus`, `StartDate`, `CompletionDate`, `LastUpdatePostDate`, ...
@@ -174,13 +192,24 @@ Add to `claude_desktop_config.json`:
 
 ```
 src/clinicaltrials/
-├── app.py       # FastMCP server init and transport config
-├── tools/       # Tool implementations (one file per tool)
-├── models.py    # Pydantic models and enums (StudyField, OverallStatus, ...)
-├── utils.py     # Shared HTTP client (Chrome TLS impersonation) and error handling
-├── prompts.py   # MCP prompts
-└── routes.py    # Custom HTTP routes (/health)
+├── app.py            # FastMCP server init and transport config
+├── tools/            # Tool implementations (one file per tool)
+├── models/           # Pydantic models and enums
+│   ├── __init__.py                          # Re-exports all classes
+│   ├── enums.py                             # All enum types (Phase, StudyType, etc.)
+│   ├── fields.py                            # StudyField enum (392 ClinicalTrials.gov fields)
+│   ├── search.py                            # Base search/query classes
+│   ├── get_study.py                         # GetStudyInput model
+│   ├── search_studies_input.py              # SearchStudiesInput model
+│   ├── get_field_values_input.py            # GetFieldValuesInput model
+│   ├── analyze_study_locations_input.py     # AnalyzeStudyLocationsInput model
+│   └── search_datatable_input.py            # SearchDatatableInput model
+├── utils.py          # Shared HTTP client (Chrome TLS impersonation) and error handling
+├── prompts.py        # MCP prompts
+└── routes.py         # Custom HTTP routes (/health)
 ```
+
+The `models/` directory organizes 1100+ lines of Pydantic models into focused modules for improved readability while maintaining full backward compatibility with `from clinicaltrials.models import ...` imports.
 
 ## Implementation Notes
 

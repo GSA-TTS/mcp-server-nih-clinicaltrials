@@ -1,0 +1,13 @@
+query,responses
+"How many clinical trials with a start date in 2025 for alzheimer's disease are funded by NIH?","1 study"
+"How many clinical trials that started in 2025 had a lcoation in the US? How many were only in the US?","8992 had a location in the US, with 7807 exclusively in the US."
+"How many clinical trials over the ten year span from April 2016 to March 2026 had Pfizer as their lead sponsor?","1131 studies"
+"How many vaccine clinical trials started in 2025?","446 studies"
+"What are the NCT IDs of 2023 observational trials for progressive supranuclear palsy?","NCT05889260, NCT06490926, NCT06870838, NCT07392411, NCT05956834, NCT06529744"
+"How many clinical trials for COVID-19 had a start date between 2019 and 2023?","9572 studies"
+"How many studies were initiated by SAMHSA for generalized anxiety disorder in 2024?","0 studies"
+"How many clinical trials involved SAMHSA in 2018?","3 studies"
+"How many clinical trials in 2025 are missing country information?","4667 studies"
+"What is the first posted study on ClinicalTrials.gov?","NCT00004640"
+"What is the difference between the versions released on 2023-09-29 and 2023-10-18 for NCT04316559?","The ClinicalTrials API does not contain version information"
+"What is the 'testField' for study NCT07526883","testField is not a valid field in the ClinicalTrials API"
