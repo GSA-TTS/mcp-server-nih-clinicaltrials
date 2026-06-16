@@ -14,6 +14,7 @@ load_dotenv()
 
 api_key = os.getenv("USAI_API_KEY")
 base_url = os.getenv("USAI_BASE_URL")
+agent_model = os.getenv("AGENT_MODEL")
 
 class NIHClinicalTrialsAgent:
     """Reusable NIH ClinicalTrials.gov Agent for Phoenix experiments"""
@@ -89,7 +90,7 @@ class NIHClinicalTrialsAgent:
 
         print("Initializing model...")
         model = ChatOpenAI(
-            model="claude_4_5_sonnet",
+            model=agent_model,
             base_url=self.base_url + "/api/v1",
             api_key=self.api_key,
             temperature=0,

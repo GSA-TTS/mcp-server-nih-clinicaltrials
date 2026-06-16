@@ -6,6 +6,7 @@ load_dotenv()
 
 api_key = os.getenv("USAI_API_KEY")
 base_url = os.getenv("USAI_BASE_URL")
+judge_model = os.getenv("JUDGE_MODEL")
 
 # Define an evaluator that uses ClassificationEvaluator
 def check_answer_scope(input, output):
@@ -27,7 +28,7 @@ def check_answer_scope(input, output):
     llm = LLM(
         provider="openai",
         client="langchain", 
-        model="claude_4_5_sonnet",
+        model=judge_model,
         base_url=base_url + "/api/v1",
         api_key=api_key,
     )
