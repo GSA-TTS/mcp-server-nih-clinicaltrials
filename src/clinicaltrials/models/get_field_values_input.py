@@ -1,7 +1,10 @@
 from typing import List
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, field_validator
 
-from clinicaltrials.models.fields import StudyField
+from clinicaltrials.models.fields import (
+    STUDY_FIELDS_SKILL_RESOURCE,
+    validate_study_fields,
+)
 
 
 class GetFieldValuesInput(BaseModel):
@@ -11,13 +14,19 @@ class GetFieldValuesInput(BaseModel):
         extra="forbid",
     )
 
-    fields: List[StudyField] = Field(
+    fields: List[str] = Field(
         ...,
         min_length=1,
         description=(
-            "One or more study fields to retrieve value distributions for. "
+            "One or more study field names to retrieve value distributions for. "
             "Works best with enumerable fields like Phase, OverallStatus, StudyType, "
             "Sex, StdAge, LeadSponsorClass, InterventionType, LocationCountry. "
-            "Each field returns its top values ranked by study count."
+            "Each field returns its top values ranked by study count. "
+            f"For the full list of valid field names, read the resource {STUDY_FIELDS_SKILL_RESOURCE}."
         ),
     )
+
+    @field_validator("fields")
+    @classmethod
+    def _validate_fields(cls, v):
+        return validate_study_fields(v)

@@ -56,10 +56,11 @@ def register_search_studies(mcp) -> None:
                 Output:
                 - format (ResponseFormat): 'json' (default) or 'csv'.
                 - markup_format (MarkupFormat): 'markdown' (default) or 'legacy'.
-                - fields (Optional[List[StudyField]]): Specific fields to return. 
-                  Defaults to 19 essential fields (NCTId, BriefTitle, OverallStatus, Phase, 
-                  Condition, InterventionName, sponsor, location, dates, enrollment) to minimize 
-                  context window usage. For full study details, use clinicaltrials_get_study instead.
+                - fields (Optional[List[str]]): Specific field names to return.
+                  Defaults to a curated set of essential fields to minimize context
+                  window usage. For the full list of valid field names, read the
+                  resource skill://clinicaltrials-fields/study_fields.md.
+                  For full study details, use clinicaltrials_get_study instead.
 
         Returns:
             str: JSON string or CSV text, or an error message prefixed with 'Error:'.
@@ -140,7 +141,7 @@ def register_search_studies(mcp) -> None:
         if params.page_token:
             query_params["pageToken"] = params.page_token
         if params.fields:
-            query_params["fields"] = ",".join(f.value for f in params.fields)
+            query_params["fields"] = ",".join(params.fields)
 
         try:
             async with make_api_client() as client:

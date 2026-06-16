@@ -24,12 +24,11 @@ def register_get_field_values(mcp) -> None:
 
         Args:
             params (GetFieldValuesInput): Input containing:
-                - fields (List[StudyField]): One or more fields to get distributions for.
-                  Best used with enumerable fields such as:
-                    Phase, OverallStatus, StudyType, Sex, StdAge,
-                    LeadSponsorClass, InterventionType, LocationCountry,
-                    DesignAllocation, DesignPrimaryPurpose, DesignMasking,
-                    IsFDARegulatedDrug, HasResults, IPDSharing.
+                - fields (List[str]): One or more field names to get distributions for.
+                  Best used with enumerable fields such as Phase, OverallStatus,
+                  StudyType, Sex, StdAge, LeadSponsorClass, InterventionType,
+                  LocationCountry. For the full list of valid field names, read the
+                  resource skill://clinicaltrials-fields/study_fields.md.
 
         Returns:
             str: JSON array where each element corresponds to one requested field:
@@ -51,14 +50,14 @@ def register_get_field_values(mcp) -> None:
 
         Examples:
             - Use when: "How many studies are in each phase?"
-              → fields=[StudyField.Phase]
+              → fields=['Phase']
             - Use when: "What's the breakdown of recruiting status and study type?"
-              → fields=[StudyField.OverallStatus, StudyField.StudyType]
+              → fields=['OverallStatus', 'StudyType']
             - Use when: "Which countries have the most trial locations?"
-              → fields=[StudyField.LocationCountry]
+              → fields=['LocationCountry']
             - Don't use when: You want full study records (use clinicaltrials_search_studies).
         """
-        fields_param = ",".join(f.value for f in params.fields)
+        fields_param = ",".join(params.fields)
 
         try:
             async with make_api_client() as client:
