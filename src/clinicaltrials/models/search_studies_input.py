@@ -1,12 +1,12 @@
 from typing import Optional, List
 from pydantic import Field
 
-from clinicaltrials.models.search import StudySearchBase
+from clinicaltrials.models.search import StudyQueryParams
 from clinicaltrials.models.enums import ResponseFormat, MarkupFormat
 from clinicaltrials.models.fields import StudyField, DEFAULT_SEARCH_FIELDS
 
 
-class SearchStudiesInput(StudySearchBase):
+class SearchStudiesInput(StudyQueryParams):
     """Input parameters for the GET /studies (search) endpoint."""
 
     # --- Sorting & pagination ---

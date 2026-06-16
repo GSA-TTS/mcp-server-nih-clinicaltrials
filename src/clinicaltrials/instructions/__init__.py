@@ -1,0 +1,2 @@
+from clinicaltrials.instructions.instructions import load_server_instructions
+

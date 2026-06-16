@@ -1,11 +1,15 @@
 import os 
 from fastmcp import FastMCP
+from clinicaltrials.instructions import load_server_instructions
 from clinicaltrials.tools import register_tools
 from clinicaltrials.prompts import register_prompts
 from clinicaltrials.routes import register_routes
 
 # Initialize FastMCP server
-mcp = FastMCP("clinicaltrials")
+mcp = FastMCP(
+    "clinicaltrials",
+    instructions=load_server_instructions()
+)
 
 # Register custom routes
 register_routes(mcp)
@@ -23,5 +27,6 @@ if __name__ == "__main__":
     port_env = os.getenv("DATABRICKS_APP_PORT") or os.getenv("PORT")
     if port_env:
         mcp.run(transport="http", host="0.0.0.0", port=int(port_env))
+        app = mcp.http_app()
     else:
         mcp.run(transport="stdio")

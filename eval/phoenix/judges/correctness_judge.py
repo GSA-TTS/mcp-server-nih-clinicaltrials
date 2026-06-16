@@ -6,6 +6,7 @@ load_dotenv()
 
 api_key = os.getenv("USAI_API_KEY")
 base_url = os.getenv("USAI_BASE_URL")
+judge_model = os.getenv("JUDGE_MODEL")
 
 # Define an evaluator that uses ClassificationEvaluator
 def match_expected_response(input, output, expected):
@@ -25,7 +26,7 @@ def match_expected_response(input, output, expected):
     llm = LLM(
         provider="openai",
         client="langchain", 
-        model="claude_4_5_sonnet",
+        model=judge_model,
         base_url=base_url + "/api/v1",
         api_key=api_key,
     )
