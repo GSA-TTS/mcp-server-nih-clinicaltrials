@@ -20,6 +20,9 @@ import httpx
 ### Server Initialization
 ```python
 mcp = FastMCP("service_mcp")
+
+# Optionally pass server-level instructions (see "Server Instructions" below)
+mcp = FastMCP("service_mcp", instructions=load_server_instructions())
 ```
 
 ### Tool Registration Pattern
@@ -53,6 +56,88 @@ The name should be:
 - Descriptive of the service/API being integrated
 - Easy to infer from the task description
 - Without version numbers or dates
+
+## Server Instructions
+
+`FastMCP` accepts an optional `instructions` string that is surfaced to the
+client/LLM as server-level guidance. Unlike per-tool descriptions (which
+explain a single tool), instructions describe the server as a whole: its
+data source, what kinds of queries are in scope, what is out of scope, and
+how the model should behave when a request mixes the two. Use them when the
+server needs consistent framing across every tool.
+
+Keep the instruction prose in a separate text file rather than a Python
+string literal. This keeps long-form content out of the code, lets
+non-engineers edit it, and makes diffs readable. A common layout is an
+`instructions/` sub-package:
+
+```
+src/<servername>/instructions/
+├── __init__.py            # exposes load_server_instructions()
+└── server_instructions.txt
+```
+
+### Loading the instructions
+
+Load the text with `importlib.resources` so the lookup is independent of the
+current working directory and works whether the server runs from source or
+as an installed wheel:
+
+```python
+import logging
+from importlib.resources import files
+
+logger = logging.getLogger(__name__)
+
+_INSTRUCTIONS_FILENAME = "server_instructions.txt"
+
+
+def load_server_instructions():
+    """Load server-level instructions text, or None if unavailable."""
+    try:
+        return (
+            files("<servername>.instructions")
+            .joinpath(_INSTRUCTIONS_FILENAME)
+            .read_text(encoding="utf-8")
+        )
+    except FileNotFoundError:
+        logger.warning(
+            "%s not found. Continuing without server instructions.",
+            _INSTRUCTIONS_FILENAME,
+        )
+        return None
+```
+
+Then wire it into the constructor in `app.py`:
+
+```python
+mcp = FastMCP("service_mcp", instructions=load_server_instructions())
+```
+
+### Three pitfalls to avoid
+
+1. **Don't use a hardcoded relative path.** `open("src/<servername>/instructions/server_instructions.txt")`
+   resolves against the process working directory, so it only works when the
+   server is launched from the repo root and silently fails everywhere else
+   (and in installed wheels). Use `importlib.resources` instead.
+2. **Don't `print()` diagnostics.** The default `stdio` transport uses stdout
+   for JSON-RPC; writing to stdout corrupts the protocol stream. Send status
+   and warnings to `logging` (which goes to stderr by default).
+3. **Make sure the `.txt` is packaged.** Build backends include `.py` files
+   but drop arbitrary data files by default. With Hatchling, force-include the
+   file in `pyproject.toml`:
+
+   ```toml
+   [tool.hatch.build.targets.wheel.force-include]
+   "src/<servername>/instructions/server_instructions.txt" = "<servername>/instructions/server_instructions.txt"
+   ```
+
+   (Other backends have equivalents — e.g. `MANIFEST.in`/`package_data` for
+   setuptools, or `include` globs for Poetry.)
+
+Loading should be resilient: if the file is missing, log a warning and return
+`None` (FastMCP treats `instructions=None` as "no instructions") rather than
+crashing the server.
 
 ## Tool Implementation
 

@@ -93,16 +93,33 @@ my-mcp-server/
     └── <servername>/       # Package directory named after the server
         ├── __init__.py
         ├── app.py          # Server initialization & deployment config only
-        ├── tools.py        # Single register_tools(mcp) function listing all tools
-        ├── models.py       # Pydantic models for API parameters
-        └── utils.py        # Utility/helper functions (API client, formatting, etc.)
+        ├── utils.py        # Utility/helper functions (API client, formatting, etc.)
+        ├── tools/          # Tool sub-package (one module per tool)
+        │   ├── __init__.py            # register_tools(mcp) aggregates all register_* fns
+        │   ├── <tool_a>.py            # register_<tool_a>(mcp) defines one @mcp.tool
+        │   └── <tool_b>.py            # register_<tool_b>(mcp) defines one @mcp.tool
+        ├── models/         # Pydantic models sub-package
+        │   ├── __init__.py            # re-exports public models; defines __all__
+        │   ├── enums.py               # Enum types shared across models
+        │   ├── fields.py              # Field definitions / typed field enums
+        │   └── <tool_a>_input.py      # Input model(s) for a given tool
+        └── instructions/   # Server-level instructions (optional)
+            ├── __init__.py            # load_server_instructions() via importlib.resources
+            └── server_instructions.txt # Server-level guidance passed to the LLM client
 ```
+
+> For very small servers a single `tools.py` / `models.py` file is fine. As
+> the surface grows, promote each to a sub-package (one module per tool/model)
+> as shown above to keep files focused; the public interface stays the same —
+> `register_tools(mcp)` and the model imports — because the `__init__.py`
+> aggregates the individual modules.
 
 **File responsibilities:**
 - **`app.py`**: Create the FastMCP instance, import and call `register_tools(mcp)`, and configure transports (stdio for local, HTTP/SSE for remote). Keep this file minimal — it should only handle deployment concerns.
-- **`tools.py`**: Export a single `register_tools(mcp)` function that defines all `@mcp.tool` decorated functions. Each tool function should be defined inside `register_tools()` so tools are registered when called.
-- **`models.py`**: Pydantic models, enums, and typed parameter classes for API request/response validation.
+- **`tools/`**: Tool sub-package. Each tool lives in its own module and exposes a `register_<tool>(mcp)` function that defines a single `@mcp.tool`. The package `__init__.py` imports each of those and exposes one `register_tools(mcp)` function that calls them all — so `app.py` still only needs `register_tools(mcp)`.
+- **`models/`**: Pydantic models sub-package. Split models by concern — e.g. `enums.py` for shared enums, `fields.py` for typed field definitions, and one `<tool>_input.py` per tool's input schema. The package `__init__.py` re-exports the public classes (and defines `__all__`) so callers can keep importing from `<servername>.models` regardless of the internal file layout.
 - **`utils.py`**: Shared helpers like API key loading, HTTP client setup, response formatting, and data summarization.
+- **`instructions/`** (optional): Server-level instructions passed to the `FastMCP` constructor via `instructions=`. These describe the server's overall purpose, data source, and the scope of supported vs. unsupported queries — guidance that applies across all tools, distinct from per-tool descriptions. Storing the text in a packaged `server_instructions.txt` keeps prose separate from code and lets non-engineers edit it. See the [🐍 Python Guide](./reference/python_mcp_server.md) and [⚡ TypeScript Guide](./reference/node_mcp_server.md) for the loading pattern.
 
 **For TypeScript**, see:
 - [⚡ TypeScript Guide](./reference/node_mcp_server.md) - Project structure, package.json, tsconfig.json
@@ -114,6 +131,8 @@ Create shared utilities:
 - Error handling helpers
 - Response formatting (JSON/Markdown)
 - Pagination support
+
+If your server defines server-level instructions, load them in `app.py` and pass them to the constructor — e.g. `FastMCP(name, instructions=load_server_instructions())`. Load the text from a packaged file (not a hardcoded relative path) and send any diagnostics to stderr/logging so they don't corrupt the stdio transport. See the language guides for the full pattern.
 
 #### 2.3 Implement Tools
 

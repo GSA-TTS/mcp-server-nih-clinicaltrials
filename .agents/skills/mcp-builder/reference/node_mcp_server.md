@@ -89,9 +89,60 @@ Create the following structure for Node/TypeScript MCP servers:
 │   ├── tools/            # Tool implementations (one file per domain)
 │   ├── services/         # API clients and shared utilities
 │   ├── schemas/          # Zod validation schemas
+│   ├── instructions/     # Server-level instructions (optional)
+│   │   ├── index.ts             # loadServerInstructions() helper
+│   │   └── server_instructions.txt
 │   └── constants.ts      # Shared constants (API_URL, CHARACTER_LIMIT, etc.)
 └── dist/                 # Built JavaScript files (entry point: dist/index.js)
 ```
+
+## Server Instructions
+
+`McpServer` accepts an optional top-level `instructions` string, surfaced to
+the client/LLM as server-level guidance. Unlike per-tool descriptions, it
+describes the server as a whole — its data source, in-scope vs. out-of-scope
+queries, and how to handle requests that mix the two. Use it when the server
+needs consistent framing across every tool.
+
+Keep the prose in a separate text file rather than a string literal so it is
+easy to edit and review. Load it from a path resolved relative to the module
+(not the process working directory) so it works regardless of where the
+server is launched from, and send any diagnostics to `stderr` (e.g.
+`console.error`) — never `stdout`, which the stdio transport reserves for
+JSON-RPC.
+
+```typescript
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+function loadServerInstructions(): string | undefined {
+  try {
+    return readFileSync(
+      join(__dirname, "server_instructions.txt"),
+      "utf-8",
+    );
+  } catch {
+    console.error(
+      "server_instructions.txt not found. Continuing without server instructions.",
+    );
+    return undefined;
+  }
+}
+
+const server = new McpServer({
+  name: "example-mcp",
+  version: "1.0.0",
+  instructions: loadServerInstructions(),
+});
+```
+
+Ensure the `.txt` file is shipped with the build: TypeScript's compiler only
+emits `.js`, so copy data files into `dist/` as part of your build script
+(e.g. an `npm` `copyfiles`/`cp` step) and include them via the `files` field
+in `package.json` when publishing.
 
 ## Tool Implementation
 
