@@ -469,7 +469,7 @@ python-dotenv==1.2.2
     # via
     #   fastmcp-slim
     #   pydantic-settings
-python-multipart==0.0.30
+python-multipart==0.0.31
     # via
     #   arize-phoenix
     #   fastmcp-slim
