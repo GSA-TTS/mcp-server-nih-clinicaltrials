@@ -27,8 +27,10 @@ def register_get_study(mcp) -> None:
                 - nct_id (str): NCT study identifier, e.g. 'NCT00000102'. Must match pattern NCT\\d+.
                 - format (ResponseFormat): 'json' (default) or 'csv'.
                 - markup_format (MarkupFormat): 'markdown' (default) or 'legacy' for text fields.
-                - fields (Optional[str]): Comma-separated field names to include, e.g.
-                  'NCTId,BriefTitle,OverallStatus,Phase'. Omit to return all fields.
+                - fields (Optional[List[str]]): Field names to include, e.g.
+                  ['NCTId', 'BriefTitle', 'OverallStatus', 'Phase']. Omit to return all
+                  fields. For the full list of valid field names, read the resource
+                  skill://clinicaltrials-fields/study_fields.md.
 
         Returns:
             str: The study data as a JSON string (when format='json') or CSV text
@@ -76,7 +78,7 @@ def register_get_study(mcp) -> None:
             "markupFormat": params.markup_format.value,
         }
         if params.fields:
-            query_params["fields"] = ",".join(f.value for f in params.fields)
+            query_params["fields"] = ",".join(params.fields)
 
         try:
             async with make_api_client() as client:

@@ -1,4 +1,9 @@
 from enum import Enum
+from typing import Iterable, List, Union
+
+# Resource URI for the field-name catalog (exposed via the skills provider).
+STUDY_FIELDS_SKILL_RESOURCE = "skill://clinicaltrials-fields/study_fields.md"
+
 
 class StudyField(str, Enum):
     """All valid field names for ClinicalTrials.gov study records.
@@ -426,3 +431,41 @@ DEFAULT_SEARCH_FIELDS = [
     StudyField.LocationCountry,  # Study countries
     StudyField.LocationFacility, # Study sites
 ]
+
+
+# String form of the default fields, used by the (now str-typed) `fields`
+# parameter so the schema no longer embeds the full StudyField enum.
+DEFAULT_SEARCH_FIELDS_STR: List[str] = [f.value for f in DEFAULT_SEARCH_FIELDS]
+
+# Set of all valid field-name strings, for fast in-code validation.
+_VALID_STUDY_FIELD_VALUES = frozenset(f.value for f in StudyField)
+
+
+def validate_study_fields(
+    values: Iterable[Union[str, "StudyField"]],
+) -> List[str]:
+    """Validate and normalize a list of study field names to strings.
+
+    Accepts plain strings or ``StudyField`` enum members (which are ``str``
+    subclasses) and returns a list of validated field-name strings. Raises
+    ``ValueError`` listing any invalid names and pointing to the skill
+    resource that documents the full catalog.
+    """
+    normalized: List[str] = []
+    invalid: List[str] = []
+    for value in values:
+        # StudyField is a str subclass, so this covers both inputs.
+        name = value.value if isinstance(value, StudyField) else str(value)
+        if name in _VALID_STUDY_FIELD_VALUES:
+            normalized.append(name)
+        else:
+            invalid.append(name)
+    if invalid:
+        raise ValueError(
+            "Invalid study field name(s): "
+            + ", ".join(repr(n) for n in invalid)
+            + ". Field names are case-sensitive. See the field catalog at "
+            + STUDY_FIELDS_SKILL_RESOURCE
+            + " for the full list of valid names."
+        )
+    return normalized

@@ -1,6 +1,10 @@
 import os 
+from pathlib import Path
 from fastmcp import FastMCP
 from clinicaltrials.instructions import load_server_instructions
+from fastmcp.server.transforms.search import BM25SearchTransform
+from fastmcp.server.providers.skills import SkillsDirectoryProvider
+
 from clinicaltrials.tools import register_tools
 from clinicaltrials.prompts import register_prompts
 from clinicaltrials.routes import register_routes
@@ -8,8 +12,14 @@ from clinicaltrials.routes import register_routes
 # Initialize FastMCP server
 mcp = FastMCP(
     "clinicaltrials",
-    instructions=load_server_instructions()
+    instructions=load_server_instructions(),
+    transforms=[BM25SearchTransform()]
 )
+
+# Register skills (field/value reference) as MCP resources.
+# Resolve relative to this package so it works from any CWD and when installed.
+_SKILLS_ROOT = Path(__file__).parent / "skills"
+mcp.add_provider(SkillsDirectoryProvider(roots=_SKILLS_ROOT, reload=False))
 
 # Register custom routes
 register_routes(mcp)

@@ -1,9 +1,13 @@
 from typing import Optional, List
-from pydantic import Field
+from pydantic import Field, field_validator
 
 from clinicaltrials.models.search import StudyQueryParams
 from clinicaltrials.models.enums import ResponseFormat, MarkupFormat
-from clinicaltrials.models.fields import StudyField, DEFAULT_SEARCH_FIELDS
+from clinicaltrials.models.fields import (
+    DEFAULT_SEARCH_FIELDS_STR,
+    STUDY_FIELDS_SKILL_RESOURCE,
+    validate_study_fields,
+)
 
 
 class SearchStudiesInput(StudyQueryParams):
@@ -45,13 +49,19 @@ class SearchStudiesInput(StudyQueryParams):
         default=MarkupFormat.MARKDOWN,
         description="Markup format for text fields: 'markdown' (default) or 'legacy'.",
     )
-    fields: Optional[List[StudyField]] = Field(
-        default_factory=lambda: DEFAULT_SEARCH_FIELDS.copy(),
+    fields: Optional[List[str]] = Field(
+        default_factory=lambda: DEFAULT_SEARCH_FIELDS_STR.copy(),
         description=(
-            "Specific fields to return. Defaults to 19 essential fields "
-            "(NCTId, BriefTitle, OverallStatus, Phase, Condition, InterventionName, etc.) "
-            "to minimize context window usage. "
-            "For comprehensive details on a single study, use clinicaltrials_get_study instead. "
-            "Custom field list example: [NCTId, BriefTitle, Phase, EnrollmentCount]."
+            "Study field names to return. Defaults to a curated set of essential "
+            "fields to minimize context window usage. For the full list of valid "
+            f"field names, read the resource {STUDY_FIELDS_SKILL_RESOURCE}. "
+            "For comprehensive details on a single study, use clinicaltrials_get_study."
         ),
     )
+
+    @field_validator("fields")
+    @classmethod
+    def _validate_fields(cls, v):
+        if v is None:
+            return v
+        return validate_study_fields(v)
