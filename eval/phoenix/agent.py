@@ -73,15 +73,15 @@ class NIHClinicalTrialsAgent:
         print("Initializing MCP client...")
         self.client = MultiServerMCPClient(
             {
-                # "reporter_server": {
-                #     "transport": "stdio",
-                #     "command": "uv",
-                #     "args": ["run", "src/reporter/app.py"],
-                # },
                 "clinicaltrials_server": {
-                    "transport": "http",
-                    "url": "http://localhost:8000/mcp",
-                }
+                    "transport": "stdio",
+                    "command": "uv",
+                    "args": ["run", "src/clinicaltrials/app.py"],
+                },
+                # "clinicaltrials_server": {
+                #     "transport": "http",
+                #     "url": "http://localhost:8000/mcp",
+                # }
             }
         )
 
@@ -160,7 +160,7 @@ async def main():
     await agent.initialize()
     
     print("Invoking agent...")
-    response = await agent.run("What phase 3 clinical trials for diabetes are currently recruiting?")
+    response = await agent.run("Do you see a skill file specifying the allowable fields?")
     
     print("\n" + "="*80)
     print("RESPONSE:")
