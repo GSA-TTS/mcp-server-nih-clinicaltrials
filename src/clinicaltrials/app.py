@@ -39,6 +39,5 @@ if __name__ == "__main__":
     port_env = os.getenv("DATABRICKS_APP_PORT") or os.getenv("PORT")
     if port_env:
         mcp.run(transport="http", host="0.0.0.0", port=int(port_env))
-        app = mcp.http_app()
     else:
         mcp.run(transport="stdio")

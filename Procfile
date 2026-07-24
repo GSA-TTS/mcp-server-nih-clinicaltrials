@@ -1,0 +1,1 @@
+web: PYTHONPATH=src python -m clinicaltrials.app
