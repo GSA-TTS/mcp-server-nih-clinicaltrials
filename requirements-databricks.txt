@@ -410,7 +410,7 @@ py-key-value-aio==0.4.5
     # via fastmcp-slim
 pyarrow==24.0.0
     # via arize-phoenix
-pyasn1==0.6.3
+pyasn1==0.6.4
     # via
     #   ldap3
     #   pyasn1-modules
